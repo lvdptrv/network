@@ -9,7 +9,7 @@ namespace vldptrv::network
 struct Connection
 {
     Connection(void);
-    static void Open(std::string_view to);
+    static Connection &Open(std::string_view to);
     std::string Read(size_t size);
     size_t Write(std::string_view data);
     void Close(void) const noexcept;
