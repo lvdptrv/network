@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "socket.hpp"
 
@@ -11,8 +12,8 @@ namespace vldptrv::network
 struct Connection
 {
     Connection(const Socket &listener);
-    std::vector Read(size_t size);
-    void Write(std::string_view &data);
+    std::vector<char> Read(size_t size);
+    void Write(std::string_view data);
     void Close(void) const noexcept;
     ~Connection(void) noexcept;
 

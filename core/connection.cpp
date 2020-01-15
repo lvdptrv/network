@@ -9,18 +9,20 @@
 #include <system_error>
 #include <string>
 #include <vector>
-#include <sstream>
+#include <cerrno>
 
 namespace vldptrv::network
 {
 struct Connection::Impl : Socket
 {
-    constexpr static auto first_read_size = 1024;
-    constexpr static auto middle_read_size = 1024;
-
     Impl(const Socket &listener)
-        : Socket(::accept(listener.GetHandle(), reinterpret_cast<sockaddr *>(&address_), reinterpret_cast<socklen_t *>(address_.sin_zero)))
+        : Socket(::accept4(listener.GetHandle(), reinterpret_cast<sockaddr *>(&address_), reinterpret_cast<socklen_t *>(address_.sin_zero), SOCK_NONBLOCK))
     {
+        while ((GetHandle() < 0) && (EAGAIN == errno))
+        {
+            SetHandle(::accept4(listener.GetHandle(), reinterpret_cast<sockaddr *>(&address_), reinterpret_cast<socklen_t *>(address_.sin_zero), SOCK_NONBLOCK));
+        }
+
         if (GetHandle() < 0)
         {
             throw std::system_error(errno, std::system_category());
@@ -58,7 +60,7 @@ struct Connection::Impl : Socket
 
         do
         {
-            auto send_size = ::send(GetHandle(), data.data(), data.size, MSG_NOSIGNAL);
+            auto send_size = ::send(GetHandle(), data.data(), data.size(), MSG_NOSIGNAL);
             if (send_size > 0)
             {
                 data.remove_prefix(total += send_size);
@@ -72,12 +74,16 @@ struct Connection::Impl : Socket
                 throw std::system_error(errno, std::generic_category());
             }
         } while (data.size() > 0);
-    
+
         return total;
     }
 
     ~Impl(void) noexcept
     {
+        if (GetHandle() < 0)
+        {
+            return;
+        }
         ::shutdown(GetHandle(), SHUT_RDWR);
     }
 
@@ -87,6 +93,10 @@ private:
 
 Connection::Connection(const Socket &listener)
     : impl_(std::make_unique<Impl>(listener)) {}
+
+std::vector<char> Connection::Read(size_t size) {
+    return impl_->Read(size);
+}
 
 Connection::~Connection(void) noexcept = default;
 
