@@ -6,7 +6,6 @@ namespace vldptrv::network
 {
 struct Application
 {
-    Application(void) noexcept;
     Application *instance(void);
     int GetListenSocket(void) const noexcept;
     ~Application(void) noexcept;
