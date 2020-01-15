@@ -11,7 +11,7 @@ namespace vldptrv::network
 struct Socket::Impl
 {
     Impl(int domain, int type, int protocol)
-        : handle_(::socket(AF_INET, SOCK_STREAM, 0))
+        : handle_(::socket(domain, type | SOCK_NONBLOCK, protocol))
     {
         if (handle_ < 0)
         {
@@ -49,5 +49,7 @@ int Socket::GetHandle(void) const noexcept {
 
 Socket::Socket(int handle) noexcept
     : impl_(std::make_unique<Impl>(handle)) {}
+
+Socket::~Socket(void) noexcept = default;
 
 } // namespace vldptrv::network

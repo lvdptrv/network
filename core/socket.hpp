@@ -12,6 +12,7 @@ struct Socket
 
 protected:
     Socket(int handle = -1) noexcept;
+
 private:
     struct Impl;
     std::unique_ptr<Impl> impl_;
