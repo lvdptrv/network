@@ -13,7 +13,7 @@ struct Configuration::Impl
 {
     Impl(std::string_view file) try
     {
-        boost::property_tree::read_json("../configurations/application.json", root_);        
+        boost::property_tree::read_json(file.data(), root_);        
         for(auto &parameter: root_) {
             parameters_[parameter.first] = parameter.second.get_value<std::string>();
         }
