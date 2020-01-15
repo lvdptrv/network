@@ -11,9 +11,9 @@ namespace vldptrv
 {
 struct Configuration::Impl
 {
-    Impl(std::string_view file) try
+    Impl(void) try
     {
-        boost::property_tree::read_json(file.data(), root_);        
+        boost::property_tree::read_json("../configurations/application.json", root_);        
         for(auto &parameter: root_) {
             parameters_[parameter.first] = parameter.second.get_value<std::string>();
         }
@@ -22,14 +22,21 @@ struct Configuration::Impl
     {
     }
 
+    std::string Get(const std::string &name) {
+        return parameters_[name];
+    }
+
 private:
-    std::map<std::string, std::variant<std::string, uint64_t>> parameters_;
-    std::string listen_hostname_ = "localhost";
+    std::map<std::string, std::string> parameters_;
     boost::property_tree::ptree root_;
 };
 
-Configuration::Configuration(std::string_view file)
-    : impl_(std::make_unique<Impl>(file)) {}
+Configuration::Configuration(void)
+    : impl_(std::make_unique<Impl>()) {}
+
+std::string Configuration::Get(const std::string &name) {
+    return impl_->Get(name);
+}
 
 Configuration::~Configuration(void) noexcept = default;
 } // namespace vldptrv

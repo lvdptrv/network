@@ -7,8 +7,17 @@ namespace vldptrv
 {
 struct Configuration
 {
-    Configuration(std::string_view file = "../configurations/application.json");
+    Configuration *instance(void) {
+        static Configuration configuration;
+        return &configuration;
+    }
+
+    std::string Get(const std::string &name);
+
     ~Configuration(void) noexcept;
+
+private:
+    Configuration(void);
 
 private:
     struct Impl;
